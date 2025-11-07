@@ -47,12 +47,12 @@ import VerIDCommonTypes
 ///
 /// ## Errors
 /// - FaceRecognitionInitializationError:
-///   - .missingAPIKey: The API key is not present in the Info.plist.
-///   - .missingServerURL: The server URL is not present in the Info.plist.
-///   - .invalidServerURL(String): The server URL string is malformed.
+///   - ``FaceRecognitionInitializationError/missingAPIKey``: The API key is not present in the Info.plist.
+///   - ``FaceRecognitionInitializationError/missingServerURL``: The server URL is not present in the Info.plist.
+///   - ``FaceRecognitionInitializationError/invalidServerURL(_:)``: The server URL string is malformed.
 /// - FaceRecognitionError:
-///   - .imageEncodingFailure: A provided UIImage could not be converted to JPEG.
-///   - .faceTemplateExtractionFailed: The remote service returned an error status code.
+///   - `.imageEncodingFailure`: A provided UIImage could not be converted to JPEG.
+///   - `.faceTemplateExtractionFailed`: The remote service returned an error status code.
 ///
 /// ## Threading
 /// - Network operations are performed with async/await using URLSession. Callers should await the
