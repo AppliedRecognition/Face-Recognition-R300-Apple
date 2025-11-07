@@ -1,0 +1,33 @@
+{
+  "originHash" : "811602749c9cf8c46df9dad0034b62cea4773bb88efe4e9e8ddb158ea09892c4",
+  "pins" : [
+    {
+      "identity" : "face-recognition-arcface-apple",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git",
+      "state" : {
+        "revision" : "4565f6eafbf699f9522e3b4da964315257277d7a",
+        "version" : "1.2.2"
+      }
+    },
+    {
+      "identity" : "onnxruntime-swift-package-manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/microsoft/onnxruntime-swift-package-manager.git",
+      "state" : {
+        "revision" : "12ce7374c86944e1f68f3a866d10105d8357f074",
+        "version" : "1.20.0"
+      }
+    },
+    {
+      "identity" : "ver-id-common-types-apple",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AppliedRecognition/Ver-ID-Common-Types-Apple.git",
+      "state" : {
+        "revision" : "c79cd076f98da9dc71e199b505f3e79a06075581",
+        "version" : "3.2.2"
+      }
+    }
+  ],
+  "version" : 3
+}
