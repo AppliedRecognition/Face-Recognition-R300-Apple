@@ -1,8 +1,6 @@
 # Face recognition for iOS using R300 model
 
-## Requirements
-
-Runs on iOS 15 or newer
+![iOS](https://img.shields.io/badge/iOS-15.0+-informational?logo=apple) ![Latest Tag](https://img.shields.io/github/v/tag/AppliedRecognition/Face-Recognition-R300-Apple?label=Latest%20version&logo=github) ![Swift Versions](https://img.shields.io/endpoint?url=https://swiftpackageindex.com/api/packages/AppliedRecognition/Face-Recognition-R300-Apple/badge?type=swift-versions)
 
 ## Installation
 
