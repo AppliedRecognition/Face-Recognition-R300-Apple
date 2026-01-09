@@ -18,7 +18,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git", .upToNextMajor(from: "1.2.2"))
+        .package(url: "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git", .upToNextMajor(from: "2.0.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
