@@ -82,10 +82,10 @@ public class FaceRecognitionR300: FaceRecognitionR300Core {
     ///   - apiKey: The API key used to authenticate requests to the R300 face recognition server.
     ///   - url: The base URL of the R300 face recognition service endpoint that performs template extraction.
     /// - SeeAlso: ``init()`` for an initializer that reads configuration from the app’s Info.plist.
-    public init(apiKey: String, url: URL) {
+    public init(apiKey: String, url: URL) async {
         self.apiKey = apiKey
         self.url = url
-        try! super.init()
+        try! await super.init()
     }
     
     /// Creates a new FaceRecognitionR300 instance using configuration values from the app’s Info.plist.
@@ -103,7 +103,7 @@ public class FaceRecognitionR300: FaceRecognitionR300Core {
     ///
     /// Use this initializer when you prefer to configure the recognizer via Info.plist rather than passing
     /// values at runtime. For explicit configuration, use ``init(apiKey:url:)``.
-    public convenience override init() throws {
+    public convenience override init() async throws {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "com.appliedrec.face-recognition-r300.apiKey") as? String else {
             throw FaceRecognitionInitializationError.missingAPIKey
         }
@@ -113,7 +113,7 @@ public class FaceRecognitionR300: FaceRecognitionR300Core {
         guard let url = URL(string: serverUrl) else {
             throw FaceRecognitionInitializationError.invalidServerURL(serverUrl)
         }
-        self.init(apiKey: apiKey, url: url)
+        await self.init(apiKey: apiKey, url: url)
     }
     
     @_spi(Testing)
