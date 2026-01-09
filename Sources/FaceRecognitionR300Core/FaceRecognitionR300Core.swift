@@ -71,11 +71,11 @@ open class FaceRecognitionR300Core: FaceRecognition {
     /// - SeeAlso: ``FaceRecognitionR300Core/createFaceRecognitionTemplates(from:in:)``,
     ///   ``FaceRecognitionR300Core/refineFaces(_:inImage:)``,
     ///   ``FaceRecognitionR300Core/createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``.
-    public init() throws {
+    public init() async throws {
         guard type(of: self) != FaceRecognitionR300Core.self else {
             fatalError("Abstract base class called its initialiser")
         }
-        self.faceDetection = try FaceDetectionRetinaFaceOrt()
+        self.faceDetection = try await FaceDetectionRetinaFaceOrt()
     }
     
     /// Creates normalized face recognition templates for R300 embeddings from detected faces in an image.
@@ -161,14 +161,21 @@ open class FaceRecognitionR300Core: FaceRecognition {
     }
     
     @_spi(Testing) public func refineFaces(_ faces: [Face], inImage image: Image) async throws -> [Face] {
-        let detectedFaces = try await self.faceDetection.detectFacesInImage(image, limit: faces.count)
-        guard detectedFaces.count == faces.count else {
+        var detectedFaces = try await self.faceDetection.detectFacesInImage(image, limit: faces.count + 10)
+        guard detectedFaces.count >= faces.count else {
             throw FaceRecognitionError.faceDetectionFailure
         }
         let refinedFaces: [Face] = faces.compactMap { originalFace in
-            return detectedFaces.min { a, b in
+            guard let closestFace = detectedFaces.min(by: { a, b in
                 return a.eyeCentre.distance(to: originalFace.eyeCentre) < b.eyeCentre.distance(to: originalFace.eyeCentre)
+            }) else {
+                return nil
             }
+            guard let index = detectedFaces.firstIndex(of: closestFace) else {
+                return nil
+            }
+            detectedFaces.remove(at: index)
+            return closestFace
         }
         guard refinedFaces.count == faces.count else {
             throw FaceRecognitionError.faceDetectionFailure
