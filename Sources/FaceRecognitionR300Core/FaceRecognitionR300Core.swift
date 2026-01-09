@@ -71,11 +71,11 @@ open class FaceRecognitionR300Core: FaceRecognition {
     /// - SeeAlso: ``FaceRecognitionR300Core/createFaceRecognitionTemplates(from:in:)``,
     ///   ``FaceRecognitionR300Core/refineFaces(_:inImage:)``,
     ///   ``FaceRecognitionR300Core/createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``.
-    public init() throws {
+    public init() async throws {
         guard type(of: self) != FaceRecognitionR300Core.self else {
             fatalError("Abstract base class called its initialiser")
         }
-        self.faceDetection = try FaceDetectionRetinaFaceOrt()
+        self.faceDetection = try await FaceDetectionRetinaFaceOrt()
     }
     
     /// Creates normalized face recognition templates for R300 embeddings from detected faces in an image.
