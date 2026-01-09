@@ -9,7 +9,7 @@ Add the package to your `Package.swift` (typically in your test target):
 
 ```swift
 dependencies: [
-    .package(url: "Face-Recognition-R300-Apple", .upToNextMajor(from: "1.0.0"))
+    .package(url: "Face-Recognition-R300-Apple", .upToNextMajor(from: "2.0.0"))
 ]
 ```
 
@@ -37,8 +37,8 @@ import FaceRecognitionR300Core
 import FaceRecognitionR300Cloud
 
 func extractFaceTemplatesFromImage(_ image: UIImage, limit: Int = 5) async throws -> [FaceTemplate<R300,[Float]>] {
-    let recognition = FaceRecognitionR300(apiKey: "<my API key>", url: URL(string: "<server URL>")!)
-    let detection = try FaceDetectionRetinaFaceOrt()
+    let recognition = await FaceRecognitionR300(apiKey: "<my API key>", url: URL(string: "<server URL>")!)
+    let detection = try await FaceDetectionRetinaFaceOrt()
     let verIDImage = try image.toVerIDImage()
     let faces = try await detection.detectFacesInImage(verIDImage, limit: limit)
     return try await recognition.createFaceRecognitionTemplates(from: faces, in: verIDImage)
@@ -55,7 +55,7 @@ import FaceRecognitionR300Cloud
 
 
 func compareFaceTemplate(_ template1: FaceTemplate<R300, [Float]>, to template2: FaceTemplate<R300, [Float]>) async throws -> Float {
-    let recognition = FaceRecognitionR300(apiKey: "<my API key>", url: URL(string: "<server URL>")!)
+    let recognition = await FaceRecognitionR300(apiKey: "<my API key>", url: URL(string: "<server URL>")!)
     guard let score = try await recognition.compareFaceRecognitionTemplates([template1], to: template2).first else {
         throw NSError(domain: "FaceRecognitionR300", code: 0, userInfo: nil)
     }
