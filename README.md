@@ -9,7 +9,7 @@ Add the package to your `Package.swift` (typically in your test target):
 
 ```swift
 dependencies: [
-    .package(url: "Face-Recognition-R300-Apple", .upToNextMajor(from: "2.0.0"))
+    .package(url: "Face-Recognition-R300-Apple", .upToNextMajor(from: "2.1.0"))
 ]
 ```
 
