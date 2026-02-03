@@ -52,6 +52,7 @@ open class FaceRecognitionR300Core: FaceRecognition {
     public typealias Version = R300
     public typealias TemplateData = [Float]
     public var defaultThreshold: Float = 0.6
+    public var faceAlignmentConfiguration: FaceAlignmentConfiguration = FaceAlignmentConfiguration()
     
     let faceDetection: FaceDetectionRetinaFaceOrt
     
@@ -107,7 +108,7 @@ open class FaceRecognitionR300Core: FaceRecognition {
     public func createFaceRecognitionTemplates(from faces: [VerIDCommonTypes.Face], in image: VerIDCommonTypes.Image) async throws -> [VerIDCommonTypes.FaceTemplate<R300, [Float]>] {
         let refinedFaces = try await self.refineFaces(faces, inImage: image)
         let alignedFaces = try refinedFaces.map { face in
-            try FaceAlignment.alignFace(face, image: image)
+            try FaceAlignment.alignFace(face, image: image, scale: self.faceAlignmentConfiguration.scale, verticalOffset: self.faceAlignmentConfiguration.verticalOffset)
         }
         let templates = try await self.createFaceRecognitionTemplatesFromAlignedFaceImages(alignedFaces)
         return templates.map { template in

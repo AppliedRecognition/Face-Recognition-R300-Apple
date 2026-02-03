@@ -1,13 +1,13 @@
 {
-  "originHash" : "811602749c9cf8c46df9dad0034b62cea4773bb88efe4e9e8ddb158ea09892c4",
+  "originHash" : "abb02021709b4f75c3f0793d0a3dcc049223d05910130cb22a3999b75e8957db",
   "pins" : [
     {
       "identity" : "face-recognition-arcface-apple",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git",
       "state" : {
-        "revision" : "4565f6eafbf699f9522e3b4da964315257277d7a",
-        "version" : "1.2.2"
+        "revision" : "c9322246731b22ec8ae674fc7f83c9028109d755",
+        "version" : "2.0.1"
       }
     },
     {
