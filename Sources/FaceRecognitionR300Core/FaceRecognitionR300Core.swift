@@ -20,7 +20,7 @@ import FaceDetectionRetinaFaceOrt
 /// - Uses `Accelerate` for efficient vector math (dot product, normalization).
 /// - Normalizes template vectors to unit length to enable cosine similarity comparison.
 /// - Refines provided faces by re-detecting faces in the image and matching them by eye-center proximity.
-/// - Provides a default threshold of 0.6 for similarity checks, which can be overridden by subclasses.
+/// - Provides a default threshold of 0.5 for similarity checks, which can be overridden by subclasses.
 ///
 /// ## Typealiases:
 /// - `Version`: ``R300``, the face template version identifier.
@@ -51,7 +51,14 @@ open class FaceRecognitionR300Core: FaceRecognition {
     
     public typealias Version = R300
     public typealias TemplateData = [Float]
-    public var defaultThreshold: Float = 0.6
+    /// Default similarity threshold for R300 verification and identification.
+    ///
+    /// 0.5 matches the Android R300 implementation (`EdgeFaceOnnxRecognition.defaultThreshold`)
+    /// and the product's intended cut-off. It was 0.6, which no other platform used. On the parity
+    /// fixture set 0.5 separates every same-subject pair from every cross-subject pair on both CPU
+    /// and GPU compute: the closest same-subject pair scores 0.5912 and the highest cross-subject
+    /// pair stays well below 0.12.
+    public var defaultThreshold: Float = 0.5
     public var faceAlignmentConfiguration: FaceAlignmentConfiguration = FaceAlignmentConfiguration()
     
     let faceDetection: FaceDetectionRetinaFaceOrt
