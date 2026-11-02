@@ -32,8 +32,12 @@ let package = Package(
         .target(
             name: "FaceRecognitionR300Core",
             dependencies: [
-                .product(name: "FaceRecognitionArcFaceCore", package: "Face-Recognition-ArcFace-Apple"),
-                .product(name: "FaceDetectionRetinaFaceOrt", package: "Face-Recognition-ArcFace-Apple")
+                // Alignment only. This target used to depend on
+                // `FaceRecognitionArcFaceCore` and `FaceDetectionRetinaFaceOrt` for a
+                // face re-detection pass that has been removed to match Android.
+                // Depending on the alignment product alone keeps ONNX Runtime out
+                // of this package's dependency graph.
+                .product(name: "FaceAlignmentCore", package: "Face-Recognition-ArcFace-Apple")
             ]
         ),
         .testTarget(

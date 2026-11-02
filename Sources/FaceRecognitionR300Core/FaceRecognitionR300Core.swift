@@ -2,24 +2,25 @@ import Foundation
 import UIKit
 import Accelerate
 import VerIDCommonTypes
-import FaceDetectionRetinaFaceOrt
-@_spi(Testing) import FaceRecognitionArcFaceCore
+import FaceAlignmentCore
 
 /// An abstract base class that implements common logic for R300-series face recognition.
-/// 
+///
 /// This class conforms to the `FaceRecognition` protocol and provides:
-/// - Face detection refinement via RetinaFace (ONNX Runtime).
 /// - Face alignment using ``FaceAlignment``.
 /// - Template normalization and cosine similarity comparison utilities.
 /// - A default verification threshold suitable for R300 embeddings.
-/// 
+///
 /// Subclasses must implement ``createFaceRecognitionTemplatesFromAlignedFaceImages(_:)`` to produce raw
 /// embedding vectors from aligned `UIImage` inputs.
 ///
 /// ## Key features:
 /// - Uses `Accelerate` for efficient vector math (dot product, normalization).
 /// - Normalizes template vectors to unit length to enable cosine similarity comparison.
-/// - Refines provided faces by re-detecting faces in the image and matching them by eye-center proximity.
+/// - Aligns the faces it is given rather than re-detecting them, which matches the Android
+///   implementation (`EdgeFaceOnnxRecognition.createFaceRecognitionTemplates`) and removes two
+///   things: a second face detector, and a failure mode where a re-detection miss became a
+///   template extraction failure.
 /// - Provides a default threshold of 0.5 for similarity checks, which can be overridden by subclasses.
 ///
 /// ## Typealiases:
@@ -27,17 +28,14 @@ import FaceDetectionRetinaFaceOrt
 /// - `TemplateData`: `[Float]`, the raw embedding vector type.
 ///
 /// ## Initialization:
-/// - ``init()`` throws if instantiated directly, as this is an abstract class. Use a concrete subclass.
+/// - ``init()`` traps if instantiated directly, as this is an abstract class. Use a concrete subclass.
 ///
 /// ## Public API:
 /// - ``createFaceRecognitionTemplates(from:in:)``
-///   - Refines detected faces, aligns them, generates embeddings via subclass implementation,
+///   - Aligns the detected faces, generates embeddings via the subclass implementation,
 ///     and normalizes the resulting templates.
 /// - ``compareFaceRecognitionTemplates(_:to:)``
 ///   - Compares multiple templates to a reference template using cosine similarity (clamped to [0, 1]).
-///
-/// ## Errors:
-/// - Throws ``FaceRecognitionError.faceDetectionFailure`` when the number of refined faces does not match the input count.
 ///
 /// ## Threading:
 /// - Public async methods leverage Swift Concurrency and can be awaited from asynchronous contexts.
@@ -61,60 +59,48 @@ open class FaceRecognitionR300Core: FaceRecognition {
     public var defaultThreshold: Float = 0.5
     public var faceAlignmentConfiguration: FaceAlignmentConfiguration = FaceAlignmentConfiguration()
     
-    let faceDetection: FaceDetectionRetinaFaceOrt
-    
     /// Initializes a new instance of the R300-series face recognition core.
     ///
     /// - Important: This class is abstract. Attempting to initialize ``FaceRecognitionR300Core``
     ///   directly will cause a runtime crash via `fatalError`. You must subclass
     ///   ``FaceRecognitionR300Core`` and initialize the subclass instead.
     ///
-    /// - Throws: Rethrows any error encountered while creating the internal face detector
-    ///   (`FaceDetectionRetinaFaceOrt`). This can fail if the ONNX Runtime model or resources
-    ///   are unavailable or invalid.
-    ///
-    /// - Postcondition: On success, the instance is configured with a RetinaFace-based detector
-    ///   used for refining input face detections prior to alignment and template extraction.
-    ///
-    /// - SeeAlso: ``FaceRecognitionR300Core/createFaceRecognitionTemplates(from:in:)``,
-    ///   ``FaceRecognitionR300Core/refineFaces(_:inImage:)``,
-    ///   ``FaceRecognitionR300Core/createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``.
+    /// - Note: This initialiser no longer loads anything, so it has nothing to throw or await.
+    ///   It keeps the `async throws` signature because subclasses override it and Swift does not
+    ///   allow an override to add `throws` or `async`. Removing them would force
+    ///   ``FaceRecognitionR300Cloud``'s convenience initialiser, which throws for Info.plist
+    ///   configuration errors, to stop throwing.
     public init() async throws {
         guard type(of: self) != FaceRecognitionR300Core.self else {
             fatalError("Abstract base class called its initialiser")
         }
-        self.faceDetection = try await FaceDetectionRetinaFaceOrt()
     }
     
     /// Creates normalized face recognition templates for R300 embeddings from detected faces in an image.
     ///
-    /// This method performs the full R300 template pipeline:
-    /// 1. Refines the provided face detections by re-detecting faces in the image using RetinaFace (ONNX Runtime)
-    ///    and matching them to the originals by eye-center proximity.
-    /// 2. Aligns each refined face using ``FaceAlignment`` to produce standardized, cropped face images.
-    /// 3. Delegates to the subclass implementation of ``createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``
+    /// This method performs the R300 template pipeline:
+    /// 1. Aligns each provided face using ``FaceAlignment`` to produce a standardized, cropped face image.
+    /// 2. Delegates to the subclass implementation of ``createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``
     ///    to generate raw embedding vectors.
-    /// 4. Normalizes each resulting template to unit length, enabling cosine similarity comparisons.
+    /// 3. Normalizes each resulting template to unit length, enabling cosine similarity comparisons.
+    ///
+    /// The faces are used as given. They are not re-detected, which is what the Android
+    /// implementation does and what keeps the alignment landmarks consistent with whichever
+    /// detector supplied the face.
     ///
     /// - Parameters:
-    ///   - faces: An array of initial face detections associated with the input image. These are refined internally
-    ///            by re-detection and matching before alignment and embedding extraction.
+    ///   - faces: Face detections associated with the input image.
     ///   - image: The source image that contains the detected faces.
     /// - Returns: An array of normalized face templates suitable for cosine similarity comparison.
-    /// - Throws:
-    ///   - ``FaceRecognitionError.faceDetectionFailure`` if the number of refined faces does not match the input count,
-    ///     which can occur if re-detection fails or yields mismatched results.
-    ///   - Any error thrown by the internal face detector or by the subclass implementation that generates embeddings.
+    /// - Throws: Any error thrown by alignment, or by the subclass implementation that generates embeddings.
     /// - Note:
     ///   - The returned templates are normalized to unit length using `Accelerate` for efficient vector math.
     ///   - Subclasses must implement ``createFaceRecognitionTemplatesFromAlignedFaceImages(_:)`` to provide embeddings.
     /// - SeeAlso:
-    ///   - ``refineFaces(_:inImage:)``
     ///   - ``createFaceRecognitionTemplatesFromAlignedFaceImages(_:)``
     ///   - ``compareFaceRecognitionTemplates(_:to:)``
     public func createFaceRecognitionTemplates(from faces: [VerIDCommonTypes.Face], in image: VerIDCommonTypes.Image) async throws -> [VerIDCommonTypes.FaceTemplate<R300, [Float]>] {
-        let refinedFaces = try await self.refineFaces(faces, inImage: image)
-        let alignedFaces = try refinedFaces.map { face in
+        let alignedFaces = try faces.map { face in
             try FaceAlignment.alignFace(face, image: image, scale: self.faceAlignmentConfiguration.scale, verticalOffset: self.faceAlignmentConfiguration.verticalOffset)
         }
         let templates = try await self.createFaceRecognitionTemplatesFromAlignedFaceImages(alignedFaces)
@@ -167,46 +153,8 @@ open class FaceRecognitionR300Core: FaceRecognition {
             vDSP_vsmul(x, 1, [inv], &x, 1, vDSP_Length(x.count))
         }
     }
-    
-    @_spi(Testing) public func refineFaces(_ faces: [Face], inImage image: Image) async throws -> [Face] {
-        var detectedFaces = try await self.faceDetection.detectFacesInImage(image, limit: faces.count + 10)
-        guard detectedFaces.count >= faces.count else {
-            throw FaceRecognitionError.faceDetectionFailure
-        }
-        let refinedFaces: [Face] = faces.compactMap { originalFace in
-            guard let closestFace = detectedFaces.min(by: { a, b in
-                return a.eyeCentre.distance(to: originalFace.eyeCentre) < b.eyeCentre.distance(to: originalFace.eyeCentre)
-            }) else {
-                return nil
-            }
-            guard let index = detectedFaces.firstIndex(of: closestFace) else {
-                return nil
-            }
-            detectedFaces.remove(at: index)
-            return closestFace
-        }
-        guard refinedFaces.count == faces.count else {
-            throw FaceRecognitionError.faceDetectionFailure
-        }
-        return refinedFaces
-    }
 }
 
 public struct R300: FaceTemplateVersion {
     public static let id: Int = 300
-}
-
-
-fileprivate extension CGPoint {
-    
-    func distance(to other: CGPoint) -> CGFloat {
-        return hypot(other.y - self.y, other.x - self.x)
-    }
-}
-
-fileprivate extension Face {
-    
-    var eyeCentre: CGPoint {
-        CGPoint(x: (self.rightEye.x + self.leftEye.x) * 0.5, y: (self.rightEye.y + self.leftEye.y) * 0.5)
-    }
 }
