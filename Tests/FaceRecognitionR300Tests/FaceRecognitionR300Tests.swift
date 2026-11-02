@@ -8,8 +8,8 @@ import FaceRecognitionR300Core
 
 @Test("Extract face template")
 func extractFaceTemplate() async throws {
-    let faceRecognition = try createFaceRecognition()
-    let faceDetection = try FaceDetectionRetinaFaceOrt()
+    let faceRecognition = try await createFaceRecognition()
+    let faceDetection = try await FaceDetectionRetinaFaceOrt()
     let image = try createTestImage()
     let face = try #require(try await faceDetection.detectFacesInImage(image, limit: 1).first)
     let template = try #require(try await faceRecognition.createFaceRecognitionTemplates(from: [face], in: image).first)
@@ -17,12 +17,12 @@ func extractFaceTemplate() async throws {
     #expect(template.data.count == 512)
 }
 
-fileprivate func createFaceRecognition() throws -> FaceRecognitionR300 {
+fileprivate func createFaceRecognition() async throws -> FaceRecognitionR300 {
     let configUrl = try #require(Bundle.module.url(forResource: "config", withExtension: "json"))
     let data = try Data(contentsOf: configUrl)
     let config = try JSONDecoder().decode(Config.self, from: data)
     let url = try #require(URL(string: config.serverUrl))
-    return FaceRecognitionR300(apiKey: config.apiKey, url: url)
+    return await FaceRecognitionR300(apiKey: config.apiKey, url: url)
 }
 
 fileprivate func createTestImage() throws -> Image {
