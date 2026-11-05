@@ -18,7 +18,11 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git", .upToNextMajor(from: "2.0.1"))
+        // Alignment, from a package that carries nothing else. This used to come from
+        // Face-Recognition-ArcFace-Apple, which also carries an ONNX Runtime face detector:
+        // SwiftPM resolves dependencies per package, so every consumer of this core pulled
+        // that detector in whether or not it was used.
+        .package(url: "https://github.com/AppliedRecognition/Face-Alignment-Apple.git", .upToNextMajor(from: "1.0.0"))
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -32,12 +36,11 @@ let package = Package(
         .target(
             name: "FaceRecognitionR300Core",
             dependencies: [
-                // Alignment only. This target used to depend on
-                // `FaceRecognitionArcFaceCore` and `FaceDetectionRetinaFaceOrt` for a
-                // face re-detection pass that has been removed to match Android.
-                // Depending on the alignment product alone keeps ONNX Runtime out
-                // of this package's dependency graph.
-                .product(name: "FaceAlignmentCore", package: "Face-Recognition-ArcFace-Apple")
+                // Alignment only. This target used to depend on `FaceRecognitionArcFaceCore`
+                // and `FaceDetectionRetinaFaceOrt` for a face re-detection pass that has been
+                // removed to match Android, and then on `FaceAlignmentCore` inside that same
+                // package, which still pulled the detector into this graph.
+                .product(name: "FaceAlignmentCore", package: "Face-Alignment-Apple")
             ]
         ),
         .testTarget(
