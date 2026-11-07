@@ -1,5 +1,5 @@
 {
-  "originHash" : "c437717c670a3f4ecf355b50195624b0364fba12198056218e6e6a4a234252ec",
+  "originHash" : "5fbfb5240b94b198b0a82a031cac5d5f34903902ed3255c36562764203452d8e",
   "pins" : [
     {
       "identity" : "face-alignment-apple",
@@ -8,6 +8,24 @@
       "state" : {
         "revision" : "ec5bdc757a42d6f471b44ebdaf0670a85aaf5c31",
         "version" : "1.0.0"
+      }
+    },
+    {
+      "identity" : "face-recognition-arcface-apple",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/AppliedRecognition/Face-Recognition-ArcFace-Apple.git",
+      "state" : {
+        "revision" : "95e814242f7d10fb58389b8fb0faf8963eec61be",
+        "version" : "2.2.0"
+      }
+    },
+    {
+      "identity" : "onnxruntime-swift-package-manager",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/microsoft/onnxruntime-swift-package-manager.git",
+      "state" : {
+        "revision" : "b7fb7f7dea8a2469e6335d95a61b8f36d0dc83b2",
+        "version" : "1.24.2"
       }
     },
     {
